@@ -21,7 +21,21 @@ class Task implements Serializable {
         this.deadline = deadline;
     }
     public String toString(){
-        return name+" "+description+" "+deadline+" Status:"+status;
+        String done;
+        if(status){
+            done = "done";
+        }
+        else{
+            done = "pending";
+        }
+        String desc;
+        if(description == null){
+            desc = "N/A";
+        }
+        else{
+            desc = description;
+        }
+        return String.format(" %-10s | %-20s | %-8s | %-8s|",name,desc,deadline,done);
     }
     public void setStatus(){
         this.status=true;
@@ -128,8 +142,10 @@ public class Main {
         }
         else{
             System.out.println("TASKS :");
+            System.out.format(" %-2s | %-10s | %-20s | %-5s | %-8s|%n","ID","NAME","DESCRIPTION","DEADLINE","STATUS");
+            System.out.format(" %-2s | %-10s | %-20s | %-8s | %-8s|%n","--","----------","--------------------","--------","--------");
             for(Task task : tasks){
-                System.out.println((tasks.indexOf(task)+1)+": "+task.toString());
+                System.out.println(" "+(tasks.indexOf(task)+1)+"  |"+task.toString());
             }
         }
     }
