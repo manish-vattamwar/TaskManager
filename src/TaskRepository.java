@@ -1,5 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class TaskRepository {
     private final String filename;
@@ -9,24 +11,44 @@ public class TaskRepository {
     }
 
     public void save(ArrayList<Task> tasks) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
-            oos.writeObject(tasks);
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
+            writer.println("[");
+            for (int i = 0; i < tasks.size(); i++) {
+                writer.print("  " + tasks.get(i).toJson());
+                if (i < tasks.size() - 1) {
+                    writer.println(",");
+                } else {
+                    writer.println();
+                }
+            }
+            writer.println("]");
         } catch (IOException e) {
             System.err.println("Error saving tasks: " + e.getMessage());
         }
     }
 
-    @SuppressWarnings("unchecked")
     public ArrayList<Task> load() {
         File file = new File(filename);
         if (!file.exists()) {
             return new ArrayList<>();
         }
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
-            return (ArrayList<Task>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
+
+        ArrayList<Task> tasks = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.startsWith("{")) {
+                    // Remove trailing comma if exists
+                    if (line.endsWith(",")) {
+                        line = line.substring(0, line.length() - 1);
+                    }
+                    tasks.add(Task.fromJson(line));
+                }
+            }
+        } catch (IOException e) {
             System.err.println("Error loading tasks: " + e.getMessage());
-            return new ArrayList<>();
         }
+        return tasks;
     }
 }
